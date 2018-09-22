@@ -1,8 +1,18 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import logo from "./logo.svg";
+import "./App.css";
 
 class App extends Component {
+  componentDidMount() {
+    window
+      .fetch("/api/posts")
+      .then(response => {
+        console.log('response', response)
+        return response.json();
+      })
+      .then(json => console.log(json))
+      .catch(error => console.log(error));
+  }
   render() {
     return (
       <div className="App">
