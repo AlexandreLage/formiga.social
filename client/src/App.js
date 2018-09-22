@@ -33,7 +33,12 @@ class App extends React.Component {
     super(props);
   }
 
-  state = { posts: [], sidebarOpened: true, uploadFormOpen: false, date: "16-09-1993" };
+  state = {
+    posts: [],
+    sidebarOpened: true,
+    uploadFormOpen: false,
+    date: "16-09-1993"
+  };
 
   componentDidMount() {
     window
@@ -107,6 +112,18 @@ class App extends React.Component {
                       iconPosition="left"
                       onChange={this.handleDateChange}
                     />
+                  </Form.Field>
+
+                  <Form.Field>
+                    <label>Picture</label>
+                    <Button disabled icon labelPosition="left">
+                      <Icon name="camera retro" />
+                      Open camera
+                    </Button>
+                    <Button icon labelPosition="right">
+                      Choose from computer
+                      <Icon name="file image" />
+                    </Button>
                   </Form.Field>
 
                   <Form.Field>
