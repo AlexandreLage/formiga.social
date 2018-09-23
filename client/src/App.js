@@ -30,9 +30,20 @@ import {
 } from "semantic-ui-calendar-react";
 
 const ErrorMessage = props => {
+  if (props.errorMessage.length > 0) {
+    const merged_messages = props.errorMessage.map(item =>
+      <Message.Item>{item}</Message.Item>
+    );
 
-    let merged_messages = props.errorMessage.reduce((sum, item) => sum + '\n' + item)
-    return <Message error header="Ops!" content={merged_messages} />;
+    return (
+      <Message error>
+        <Message.Header>Ops!</Message.Header>
+        <Message.List>
+          { merged_messages }
+        </Message.List>
+      </Message>
+    );
+  }
 };
 
 class App extends React.Component {
@@ -52,7 +63,8 @@ class App extends React.Component {
       neighborhood: "",
       number: "",
       city: "",
-      state: ""
+      state: "",
+      terms: true
     },
     form_errors: {
       titleError: false,
@@ -63,8 +75,8 @@ class App extends React.Component {
       cityError: false,
       stateError: false
     },
-    errorMessage: [''],
-    isFormOnError: false,
+    errorMessage: [""],
+    isFormOnError: false
   };
 
   componentDidMount() {
@@ -74,7 +86,7 @@ class App extends React.Component {
       .then(posts => this.setState({ posts }))
       .catch(error => console.log(error));
 
-      this.setState({uploadFormOpen: true})
+    this.setState({ uploadFormOpen: true });
   }
 
   handlePusherClick = () => {
@@ -123,8 +135,8 @@ class App extends React.Component {
       ...this.state.form_errors,
       titleError,
       descriptionError
-    }
-    this.setState({ isFormOnError, form_errors, errorMessage});
+    };
+    this.setState({ isFormOnError, form_errors, errorMessage });
   };
 
   render() {
@@ -193,6 +205,7 @@ class App extends React.Component {
                   <Form.Field required>
                     <label>Date</label>
                     <DateTimeInput
+                      readOnly
                       name="datetime"
                       placeholder="Date of the picture"
                       value={this.state.form.datetime}
@@ -203,7 +216,7 @@ class App extends React.Component {
 
                   <Form.Group>
                     <Form.Input
-                      label="Address"
+                      label="Street/Avenue"
                       placeholder="Paulista Avenue"
                       width={10}
                       name="address"
@@ -254,9 +267,20 @@ class App extends React.Component {
                     />
                   </Form.Group>
 
-                  <Form.Field>
-                    <Checkbox label="I agree to the Terms and Conditions" />
-                  </Form.Field>
+                  <Form.Checkbox
+                    name="terms"
+                    toggle
+                    checked={this.state.form.terms}
+                    onChange={() =>
+                      this.setState({
+                        form: {
+                          ...this.state.form,
+                          terms: !this.state.form.terms
+                        }
+                      })
+                    }
+                    label="I agree to the Terms and Conditions"
+                  />
                   <Form.Button
                     disabled={
                       !this.state.form.title ||
@@ -265,14 +289,17 @@ class App extends React.Component {
                       !this.state.form.address ||
                       !this.state.form.neighborhood ||
                       !this.state.form.city ||
-                      !this.state.form.state
+                      !this.state.form.state ||
+                      !this.state.form.terms
                     }
                     type="submit"
                   >
                     Submit
                   </Form.Button>
                 </Form>
-                { this.state.isFormOnError && (<ErrorMessage errorMessage={this.state.errorMessage} />)}
+                {this.state.isFormOnError && (
+                  <ErrorMessage errorMessage={this.state.errorMessage} />
+                )}
               </Popup.Content>
             </Popup>
           </Menu.Item>
