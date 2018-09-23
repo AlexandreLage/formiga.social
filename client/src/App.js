@@ -18,7 +18,8 @@ import {
   Popup,
   Form,
   Checkbox,
-  TextArea
+  TextArea,
+  Message
 } from "semantic-ui-react";
 
 import {
@@ -27,6 +28,12 @@ import {
   DateTimeInput,
   DatesRangeInput
 } from "semantic-ui-calendar-react";
+
+const ErrorMessage = props => {
+
+    let merged_messages = props.errorMessage.reduce((sum, item) => sum + '\n' + item)
+    return <Message error header="Ops!" content={merged_messages} />;
+};
 
 class App extends React.Component {
   constructor(props) {
@@ -37,7 +44,27 @@ class App extends React.Component {
     posts: [],
     sidebarOpened: true,
     uploadFormOpen: false,
-    date: "16-09-1993"
+    form: {
+      title: "",
+      datetime: "",
+      description: "",
+      address: "",
+      neighborhood: "",
+      number: "",
+      city: "",
+      state: ""
+    },
+    form_errors: {
+      titleError: false,
+      datetimeError: false,
+      descriptionError: false,
+      addressError: false,
+      neighborhoodError: false,
+      cityError: false,
+      stateError: false
+    },
+    errorMessage: [''],
+    isFormOnError: false,
   };
 
   componentDidMount() {
@@ -46,6 +73,8 @@ class App extends React.Component {
       .then(response => response.json())
       .then(posts => this.setState({ posts }))
       .catch(error => console.log(error));
+
+      this.setState({uploadFormOpen: true})
   }
 
   handlePusherClick = () => {
@@ -56,10 +85,46 @@ class App extends React.Component {
   handleToggle = () =>
     this.setState({ sidebarOpened: !this.state.sidebarOpened });
 
+  handleInputChange = e => {
+    const name = e.target.name;
+    const value = e.target.value;
+    this.setState({ form: { ...this.state.form, [name]: value } });
+  };
+
   handleDateChange = (event, { name, value }) => {
-    if (this.state.hasOwnProperty(name)) {
-      this.setState({ [name]: value });
+    if (this.state.form.hasOwnProperty(name)) {
+      this.setState({ form: { ...this.state.form, [name]: value } });
     }
+  };
+
+  handleSubmit = e => {
+    e.preventDefault();
+    let errorMessage = [];
+
+    let titleError = false;
+    let descriptionError = false;
+
+    if (this.state.form.title.length < 7) {
+      errorMessage.push("Title needs to have more than 7 characters.");
+      titleError = true;
+    } else {
+      titleError = false;
+    }
+
+    if (this.state.form.description.length < 7) {
+      errorMessage.push("Description needs to have more than 7 characters.");
+      descriptionError = true;
+    } else {
+      descriptionError = false;
+    }
+
+    let isFormOnError = titleError || descriptionError;
+    let form_errors = {
+      ...this.state.form_errors,
+      titleError,
+      descriptionError
+    }
+    this.setState({ isFormOnError, form_errors, errorMessage});
   };
 
   render() {
@@ -72,7 +137,6 @@ class App extends React.Component {
           <Menu.Item>
             <Icon name="recycle" /> Formiga Social
           </Menu.Item>
-
           <Menu.Item position="right">
             <Popup
               open={this.state.uploadFormOpen}
@@ -92,29 +156,18 @@ class App extends React.Component {
             >
               <Popup.Header>Upload new picture</Popup.Header>
               <Popup.Content>
-                <Form>
-                  <Form.Field>
-                    <label>Title</label>
-                    <input placeholder="Write one title for picture" />
-                  </Form.Field>
-                  <Form.Field
-                    id="form-textarea-control-description"
-                    control={TextArea}
-                    label="Description"
-                    placeholder="Explain the issue on the picture"
+                <Form onSubmit={event => this.handleSubmit(event)}>
+                  <Form.Input
+                    label="Title"
+                    name="title"
+                    placeholder="Write one title for picture"
+                    value={this.state.form.title}
+                    onChange={this.handleInputChange}
+                    error={this.state.form_errors.titleError}
+                    required
                   />
-                  <Form.Field>
-                    <label>Date</label>
-                    <DateInput
-                      name="date"
-                      placeholder="Date of the picture"
-                      value={this.state.date}
-                      iconPosition="left"
-                      onChange={this.handleDateChange}
-                    />
-                  </Form.Field>
 
-                  <Form.Field>
+                  <Form.Field required>
                     <label>Picture</label>
                     <Button disabled icon labelPosition="left">
                       <Icon name="camera retro" />
@@ -126,11 +179,100 @@ class App extends React.Component {
                     </Button>
                   </Form.Field>
 
+                  <Form.Field
+                    id="form-textarea-control-description"
+                    name="description"
+                    control={TextArea}
+                    label="Description"
+                    placeholder="Explain the issue on the picture"
+                    value={this.state.form.description}
+                    onChange={this.handleInputChange}
+                    error={this.state.form_errors.descriptionError}
+                    required
+                  />
+                  <Form.Field required>
+                    <label>Date</label>
+                    <DateTimeInput
+                      name="datetime"
+                      placeholder="Date of the picture"
+                      value={this.state.form.datetime}
+                      iconPosition="left"
+                      onChange={this.handleDateChange}
+                    />
+                  </Form.Field>
+
+                  <Form.Group>
+                    <Form.Input
+                      label="Address"
+                      placeholder="Paulista Avenue"
+                      width={10}
+                      name="address"
+                      value={this.state.form.address}
+                      onChange={this.handleInputChange}
+                      error={this.state.form_errors.addressError}
+                      required
+                    />
+                    <Form.Input
+                      label="Number"
+                      placeholder="1234"
+                      name="number"
+                      width={6}
+                      value={this.state.form.number}
+                      onChange={this.handleInputChange}
+                      error={this.state.form_errors.numberError}
+                    />
+                  </Form.Group>
+
+                  <Form.Input
+                    label="Neighborhood"
+                    placeholder="Jd. Paulista"
+                    name="neighborhood"
+                    value={this.state.form.neighborhood}
+                    onChange={this.handleInputChange}
+                    error={this.state.form_errors.neighborhoodError}
+                    required
+                  />
+
+                  <Form.Group widths="equal">
+                    <Form.Input
+                      label="City"
+                      placeholder="São Paulo"
+                      name="city"
+                      value={this.state.form.city}
+                      onChange={this.handleInputChange}
+                      error={this.state.form_errors.cityError}
+                      required
+                    />
+                    <Form.Input
+                      label="State"
+                      placeholder="São Paulo"
+                      name="state"
+                      value={this.state.form.state}
+                      onChange={this.handleInputChange}
+                      error={this.state.form_errors.stateError}
+                      required
+                    />
+                  </Form.Group>
+
                   <Form.Field>
                     <Checkbox label="I agree to the Terms and Conditions" />
                   </Form.Field>
-                  <Button type="submit">Submit</Button>
+                  <Form.Button
+                    disabled={
+                      !this.state.form.title ||
+                      !this.state.form.description ||
+                      !this.state.form.datetime ||
+                      !this.state.form.address ||
+                      !this.state.form.neighborhood ||
+                      !this.state.form.city ||
+                      !this.state.form.state
+                    }
+                    type="submit"
+                  >
+                    Submit
+                  </Form.Button>
                 </Form>
+                { this.state.isFormOnError && (<ErrorMessage errorMessage={this.state.errorMessage} />)}
               </Popup.Content>
             </Popup>
           </Menu.Item>
