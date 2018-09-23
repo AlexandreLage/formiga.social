@@ -29,18 +29,20 @@ import {
   DatesRangeInput
 } from "semantic-ui-calendar-react";
 
+const HEADERS = {
+  'Content-Type': 'application/json',
+};
+
 const ErrorMessage = props => {
   if (props.errorMessage.length > 0) {
-    const merged_messages = props.errorMessage.map(item =>
+    const merged_messages = props.errorMessage.map(item => (
       <Message.Item>{item}</Message.Item>
-    );
+    ));
 
     return (
       <Message error>
         <Message.Header>Ops!</Message.Header>
-        <Message.List>
-          { merged_messages }
-        </Message.List>
+        <Message.List>{merged_messages}</Message.List>
       </Message>
     );
   }
@@ -56,14 +58,14 @@ class App extends React.Component {
     sidebarOpened: true,
     uploadFormOpen: false,
     form: {
-      title: "",
-      datetime: "",
-      description: "",
-      address: "",
-      neighborhood: "",
-      number: "",
-      city: "",
-      state: "",
+      title: "Testando",
+      datetime: "11-11-1111 11:11",
+      description: "Testando",
+      address: "Testando",
+      neighborhood: "Testando",
+      number: "123",
+      city: "Testando",
+      state: "Testando",
       terms: true
     },
     form_errors: {
@@ -137,6 +139,28 @@ class App extends React.Component {
       descriptionError
     };
     this.setState({ isFormOnError, form_errors, errorMessage });
+
+    if (!isFormOnError) {
+      window
+        .fetch("/api/posts", {
+          method: "POST",
+          headers: HEADERS,
+          body: JSON.stringify({
+            post_type: "picture",
+            title: this.state.form.title,
+            description: this.state.form.description,
+            date: this.state.form.datetime,
+            address1: this.state.form.address,
+            address2: this.state.form.neighborhood,
+            number: this.state.form.number,
+            city: this.state.form.city,
+            state: this.state.form.state,
+            issue_type: "",
+            maps_marker: ""
+          })
+        })
+        .then(res => alert(JSON.stringify(res)));
+    }
   };
 
   render() {
