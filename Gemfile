@@ -51,3 +51,6 @@ gem 'activeadmin'
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+
+#Active storage for pictures
+gem "google-cloud-storage", "~> 1.11", require: false
