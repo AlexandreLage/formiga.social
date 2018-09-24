@@ -19,7 +19,9 @@ import {
   Form,
   Checkbox,
   TextArea,
-  Message
+  Message,
+  Card,
+  Transition
 } from "semantic-ui-react";
 
 import {
@@ -33,6 +35,7 @@ import DropzoneComponent from "react-dropzone-component";
 import moment from "moment";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { ActionCable } from "react-actioncable-provider";
 
 const JSON_HEADERS = {
   "Content-Type": "application/json"
@@ -57,6 +60,25 @@ const ErrorMessage = props => {
     );
   }
 };
+
+const FSCard = props => (
+  <Card link fluid>
+    <Image src={props.pictures[0]} />
+    <Card.Content>
+      <Card.Header>{props.title}</Card.Header>
+      <Card.Meta>
+        <span className="date">{props.address1 || props.address2}</span>
+      </Card.Meta>
+      <Card.Description>{props.description}</Card.Description>
+    </Card.Content>
+    <Card.Content extra>
+      <a>
+        <Icon name="eye" />
+        {Math.floor(Math.random() * 100)} People watching
+      </a>
+    </Card.Content>
+  </Card>
+);
 
 class App extends React.Component {
   constructor(props) {
@@ -152,7 +174,18 @@ class App extends React.Component {
             draggable: true
           });
         }
-        this.setState({ submitted: false });
+        this.setState({ submitted: false, queueComplete: false });
+      },
+      queuecomplete: () => {
+        toast("Yes! All uploads are done!", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        });
+        this.setState({ queueComplete: true });
       }
     };
 
@@ -315,13 +348,33 @@ class App extends React.Component {
     }
   };
 
+  handleReceivedPost = response => {
+    console.log("Received post", response);
+    this.setState({
+      posts: [response.json, ...this.state.posts]
+    });
+
+    toast("Awesome! List's been updated 🚀", {
+      position: "top-left",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true
+    });
+  };
+
   render() {
     const { children } = this.props;
     const { sidebarOpened } = this.state;
 
     return (
       <Responsive>
-        <Menu pointing secondary attached="top">
+        <ActionCable
+          channel={{ channel: "PostsChannel" }}
+          onReceived={this.handleReceivedPost}
+        />
+      <Menu fixed='top' pointing>
           <Menu.Item>
             <Icon name="recycle" /> Formiga Social
           </Menu.Item>
@@ -366,22 +419,24 @@ class App extends React.Component {
                       eventHandlers={this.eventHandlers}
                       djsConfig={this.djsConfig}
                     />
-
-                    <Form.Group widths="equal">
-                      <Form.Button disabled icon labelPosition="right">
-                        <Icon name="camera retro" />
-                        Open camera
-                      </Form.Button>
-                      <Form.Button
-                        onClick={() => this.dropzone.hiddenFileInput.click()}
-                        icon
-                        labelPosition="right"
-                      >
-                        Choose from computer
-                        <Icon name="file image" />
-                      </Form.Button>
-                    </Form.Group>
                   </Form.Field>
+
+                  <Form.Group widths="equal">
+                    <Button type="button" disabled icon labelPosition="right">
+                      <Icon name="camera retro" />
+                      Open camera
+                    </Button>
+                    <Button
+                      fluid
+                      onClick={() => this.dropzone.hiddenFileInput.click()}
+                      icon
+                      labelPosition="right"
+                      type="button"
+                    >
+                      Choose from computer
+                      <Icon name="file image" />
+                    </Button>
+                  </Form.Group>
 
                   <Form.Field
                     id="form-textarea-control-description"
@@ -482,7 +537,8 @@ class App extends React.Component {
                       !this.state.form.neighborhood ||
                       !this.state.form.city ||
                       !this.state.form.state ||
-                      !this.state.form.terms
+                      !this.state.form.terms ||
+                      !this.state.queueComplete
                     }
                     type="submit"
                   >
@@ -499,15 +555,14 @@ class App extends React.Component {
         <Sidebar.Pushable>
           <Sidebar
             as={Menu}
-            width="wide"
+            width="very wide"
             animation="push"
-            inverted
             vertical
             visible={sidebarOpened}
           >
-            {this.state.posts.map(item => (
-              <p style={{ color: "white" }}>{JSON.stringify(item)}</p>
-            ))}
+            <Card.Group style={{ padding: 10 }}>
+              {this.state.posts.map(item => <FSCard {...item} />)}
+            </Card.Group>
           </Sidebar>
           <Sidebar.Pusher>
             <Grid.Row>

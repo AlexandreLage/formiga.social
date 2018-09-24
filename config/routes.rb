@@ -9,5 +9,6 @@ Rails.application.routes.draw do
     post '/attach_picture', to: 'posts#attach_picture', controller: 'posts'
   end
 
+  mount ActionCable.server => '/cable'
 
 end

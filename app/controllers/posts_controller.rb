@@ -4,7 +4,7 @@ class PostsController < ApplicationController
 
   # GET /posts
   def index
-    @posts = Post.all.with_attached_pictures
+    @posts = Post.where.not(issue_solved: nil).order(id: :desc).all.with_attached_pictures
 
     #render json: @posts.pictures
     render json: @posts.map { |post|
@@ -32,7 +32,10 @@ class PostsController < ApplicationController
   # PATCH/PUT /posts/1
   def update
     if @post.update(update_params)
-      render json: @post
+      urls = @post.pictures.map { |photo| url_for(photo) };
+      merged_with_urls = @post.as_json.merge({ pictures: urls })
+      ActionCable.server.broadcast 'posts_channel', json: merged_with_urls
+      render json: merged_with_urls
     else
       render json: @post.errors, status: :unprocessable_entity
     end

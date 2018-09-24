@@ -4,11 +4,12 @@
   "private": true,
   "proxy": "http://localhost:3001",
   "dependencies": {
-    "react": "^16.5.2",
-    "react-dom": "^16.5.2",
-    "react-scripts": "1.1.5",
     "moment": "^2.22.2",
+    "react": "^16.5.2",
+    "react-actioncable-provider": "^1.0.3",
+    "react-dom": "^16.5.2",
     "react-dropzone-component": "^3.2.0",
+    "react-scripts": "1.1.5",
     "react-toastify": "^4.3.1",
     "semantic-ui-calendar-react": "^0.9.0",
     "semantic-ui-react": "^0.82.5"
