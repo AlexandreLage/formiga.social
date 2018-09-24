@@ -39,6 +39,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ActionCable } from "react-actioncable-provider";
 import { Gallery } from "./components";
+import { Map, InfoWindow, Marker, GoogleApiWrapper } from "google-maps-react";
 
 const JSON_HEADERS = {
   "Content-Type": "application/json"
@@ -48,6 +49,34 @@ const JSON_HEADERS = {
 //   Accept: "application/json",
 //   "Content-Type": "multipart/form-data"
 // };
+//
+//
+class MapContainer extends Component {
+  render() {
+    return (
+      <Map
+        initialCenter={{
+          lat: -23.5675222,
+          lng: -46.6378649
+        }}
+        google={this.props.google}
+        zoom={14}
+      >
+        <Marker onClick={() => {}} name={"Current location"} />
+
+        <InfoWindow onClose={() => {}}>
+          <div>
+            <h1>"Infor window?"</h1>
+          </div>
+        </InfoWindow>
+      </Map>
+    );
+  }
+}
+
+const Maps = GoogleApiWrapper({
+  apiKey: "AIzaSyBL9Uv1__BU6cDB2XFqkyoZQ1LDSE16zpo"
+})(MapContainer);
 
 const ErrorMessage = props => {
   if (props.errorMessage.length > 0) {
@@ -67,12 +96,14 @@ const ErrorMessage = props => {
 const FSCard = props => {
   return (
     <Card
+      raised
       link
       fluid
-      color="pink"
+      color="green"
       style={{ background: "linear-gradient(to bottom,#F7F7FF, white)" }}
     >
       <Gallery
+        style={{ border: 0, margin: 0, padding: 0 }}
         showThumbnails
         images={props.pictures.map(item => ({
           caption: props.title,
@@ -83,7 +114,7 @@ const FSCard = props => {
         }))}
       />
       <Card.Content>
-        <Card.Header style={{color: '#430089'}}>{props.title}</Card.Header>
+        <Card.Header style={{ color: "#304240" }}>{props.title}</Card.Header>
         <Card.Meta>
           <span className="date">{props.address1 || props.address2}</span>
         </Card.Meta>
@@ -393,9 +424,11 @@ class App extends React.Component {
           channel={{ channel: "PostsChannel" }}
           onReceived={this.handleReceivedPost}
         />
-        <Menu inverted fixed="top" pointing style={{ background: "#430089" }}>
+        <Menu inverted fixed="top" pointing style={{ background: "#304240" }}>
           <Menu.Item as={"a"} href="http://formiga.social">
-            <Header style={{padding: 10}} inverted as='h1'><Icon name="recycle" size={40}/> Formiga Social</Header>
+            <Header style={{ padding: 10 }} inverted as="h1">
+              <Icon name="recycle" size={40} /> formiga.social
+            </Header>
           </Menu.Item>
           <Menu.Item position="right">
             <Popup
@@ -548,7 +581,7 @@ class App extends React.Component {
                   </Form.Group>
 
                   <Form.Checkbox
-                    style={{color: 'white'}}
+                    style={{ color: "white" }}
                     name="terms"
                     toggle
                     checked={this.state.form.terms}
@@ -596,23 +629,27 @@ class App extends React.Component {
             style={{
               marginTop: 50,
               overflow: "hidden",
-              background: "linear-gradient(to bottom, #430089, #000)"
+              background: "linear-gradient(to bottom, #304240, #000)"
             }}
           >
             <Card.Group style={{ padding: 10, marginTop: 90 }}>
-              <div style={{marginLeft: 10}}>
-                <Header inverted as='h2'>Pictures feed</Header>
-                <p style={{color: '#F7F7FF'}}>Let's work together for a better country?
-                  Here we share public service issue's for a better society.</p>
+              <div style={{ marginLeft: 10 }}>
+                <Header inverted as="h2">
+                  Pictures feed
+                </Header>
+                <p style={{ color: "#F7F7FF" }}>
+                  Let's share public service issues in our society.
+                </p>
               </div>
 
               {this.state.posts.map(item => <FSCard {...item} />)}
             </Card.Group>
           </Sidebar>
-          <Sidebar.Pusher style={{ backgroundColor: "green", height: "100vh" }}>
+          <Sidebar.Pusher style={{ backgroundColor: "#304240", height: "100vh" }}>
             <Grid.Row>
               <Grid.Column>
                 <div>
+                  <Maps />
                   <Button
                     style={{ margin: 10 }}
                     icon={!sidebarOpened}
