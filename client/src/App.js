@@ -36,6 +36,7 @@ import moment from "moment";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ActionCable } from "react-actioncable-provider";
+import { Gallery } from './components';
 
 const JSON_HEADERS = {
   "Content-Type": "application/json"
@@ -63,7 +64,15 @@ const ErrorMessage = props => {
 
 const FSCard = props => (
   <Card link fluid>
-    <Image src={props.pictures[0]} />
+    <Gallery showThumbnails
+      images={props.pictures.map(item => ({
+        caption: props.title,
+        src: item,
+        thumbnail: item,
+        orientation: 'squared',
+        useForDemo: true
+      }))}
+    />
     <Card.Content>
       <Card.Header>{props.title}</Card.Header>
       <Card.Meta>
@@ -374,7 +383,7 @@ class App extends React.Component {
           channel={{ channel: "PostsChannel" }}
           onReceived={this.handleReceivedPost}
         />
-      <Menu fixed='top' pointing>
+        <Menu fixed="top" pointing>
           <Menu.Item>
             <Icon name="recycle" /> Formiga Social
           </Menu.Item>
