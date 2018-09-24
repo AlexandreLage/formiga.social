@@ -29,9 +29,19 @@ import {
   DatesRangeInput
 } from "semantic-ui-calendar-react";
 
-const HEADERS = {
-  'Content-Type': 'application/json',
+import DropzoneComponent from "react-dropzone-component";
+import moment from "moment";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const JSON_HEADERS = {
+  "Content-Type": "application/json"
 };
+
+// const FORM_DATA_HEADERS = {
+//   Accept: "application/json",
+//   "Content-Type": "multipart/form-data"
+// };
 
 const ErrorMessage = props => {
   if (props.errorMessage.length > 0) {
@@ -51,45 +61,150 @@ const ErrorMessage = props => {
 class App extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      submitted: false,
+      posts: [],
+      sidebarOpened: true,
+      uploadFormOpen: false,
+      form: {
+        id: 0,
+        title: "",
+        datetime: "",
+        description: "",
+        address: "",
+        neighborhood: "",
+        number: "",
+        city: "",
+        state: "",
+        terms: true
+      },
+      form_errors: {
+        titleError: false,
+        datetimeError: false,
+        descriptionError: false,
+        addressError: false,
+        neighborhoodError: false,
+        cityError: false,
+        stateError: false,
+        dropzoneError: false
+      },
+      form_settings: {},
+      errorMessage: [""],
+      isFormOnError: false
+    };
   }
 
-  state = {
-    posts: [],
-    sidebarOpened: true,
-    uploadFormOpen: false,
-    form: {
-      title: "Testando",
-      datetime: "11-11-1111 11:11",
-      description: "Testando",
-      address: "Testando",
-      neighborhood: "Testando",
-      number: "123",
-      city: "Testando",
-      state: "Testando",
-      terms: true
-    },
-    form_errors: {
-      titleError: false,
-      datetimeError: false,
-      descriptionError: false,
-      addressError: false,
-      neighborhoodError: false,
-      cityError: false,
-      stateError: false
-    },
-    errorMessage: [""],
-    isFormOnError: false
-  };
-
   componentDidMount() {
+    //DropzoneComponent setting
+    this.dropzoneConfig = {
+      iconFiletypes: [".jpg", ".png", ".gif"],
+      showFiletypeIcon: true,
+      postUrl: `/api/attach_picture`
+    };
+    //DropzoneComponent setting
+    this.djsConfig = {
+      addRemoveLinks: true,
+      autoProcessQueue: true,
+      dictCancelUpload: "",
+      dictRemoveFile: "Remove",
+      dictDefaultMessage: "Click or drop pictures here!",
+      maxFiles: 3,
+      params: () => ({
+        id: this.state.form.id
+      })
+    };
+    //DropzoneComponent setting
+    this.eventHandlers = {
+      init: dropzone => {
+        this.dropzone = dropzone; //ref
+      },
+      removedfile: file => {
+        console.log("removed file", file);
+        if (!this.state.submitted) {
+          window
+            .fetch(`/api/posts/${this.state.form.id}`, {
+              method: "DELETE",
+              headers: JSON_HEADERS,
+              body: JSON.stringify({
+                attachment_id: file.xhr
+                  ? JSON.parse(file.xhr.response)[0].id
+                  : ""
+              })
+            })
+            .then(res => {
+              console.log("Delete response", res);
+              if (res.status == 200) return res.json();
+              else return res.text();
+            })
+            .then(text => console.log("Was not deleted", text));
+        }
+      },
+      addedfile: file => {
+        if (this.dropzone.files[3] != null) {
+          this.dropzone.removeFile(this.dropzone.files[3]);
+          toast("Please, select up to 3 pictures.", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true
+          });
+        }
+        this.setState({ submitted: false });
+      }
+    };
+
+    //Get all posts
     window
       .fetch("/api/posts")
       .then(response => response.json())
       .then(posts => this.setState({ posts }))
       .catch(error => console.log(error));
 
-    this.setState({ uploadFormOpen: true });
+    this.handleTemporaryPost();
   }
+
+  handleTemporaryPost = () => {
+    window
+      .fetch("/api/posts", {
+        method: "POST",
+        headers: JSON_HEADERS,
+        body: JSON.stringify({
+          post_type: "",
+          title: "",
+          description: "",
+          date: new Date(),
+          address1: "",
+          address2: "",
+          number: "",
+          city: "",
+          state: "",
+          issue_type: "",
+          maps_marker: ""
+        })
+      })
+      .then(res => {
+        if (res.status == 201) return res.json();
+        else return {};
+      })
+      .then(post => {
+        //console.log("Temporary Post", post);
+        this.setState({
+          form: {
+            ...post,
+            //remapping attributes to match expected state
+            datetime: moment(post.date).format("DD-MM-YYYY HH:mm"),
+            address: post.address1,
+            neighborhood: post.address2,
+            terms: true
+          }
+        });
+      });
+
+    this.setState({ uploadFormOpen: true });
+  };
 
   handlePusherClick = () => {
     const { sidebarOpened } = this.state;
@@ -117,6 +232,7 @@ class App extends React.Component {
 
     let titleError = false;
     let descriptionError = false;
+    let dropzoneError = false;
 
     if (this.state.form.title.length < 7) {
       errorMessage.push("Title needs to have more than 7 characters.");
@@ -132,19 +248,33 @@ class App extends React.Component {
       descriptionError = false;
     }
 
-    let isFormOnError = titleError || descriptionError;
+    if (!this.dropzone.files.length) {
+      errorMessage.push("Please, add some picture.");
+      toast("Please, add some picture.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+      dropzoneError = true;
+    }
+
+    let isFormOnError = titleError || descriptionError || dropzoneError;
     let form_errors = {
       ...this.state.form_errors,
       titleError,
-      descriptionError
+      descriptionError,
+      dropzoneError
     };
     this.setState({ isFormOnError, form_errors, errorMessage });
 
     if (!isFormOnError) {
       window
-        .fetch("/api/posts", {
-          method: "POST",
-          headers: HEADERS,
+        .fetch(`/api/posts/${this.state.form.id}`, {
+          method: "PUT",
+          headers: JSON_HEADERS,
           body: JSON.stringify({
             post_type: "picture",
             title: this.state.form.title,
@@ -156,10 +286,32 @@ class App extends React.Component {
             city: this.state.form.city,
             state: this.state.form.state,
             issue_type: "",
-            maps_marker: ""
+            maps_marker: "",
+            issue_solved: false
           })
         })
-        .then(res => alert(JSON.stringify(res)));
+        .then(res => {
+          console.log("PUT Response", res);
+          if (res.status == 200) {
+            toast("🦄 Thanks!", {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true
+            });
+            this.setState({ submitted: true }, () => {
+              this.dropzone.removeAllFiles();
+              this.handleTemporaryPost();
+            });
+
+            return;
+          } else return res.text();
+        })
+        .then(post => {
+          //console.log("Permanent Post", post);
+        });
     }
   };
 
@@ -203,16 +355,32 @@ class App extends React.Component {
                     required
                   />
 
-                  <Form.Field required>
+                  <Form.Field
+                    required
+                    error={this.state.form_errors.dropzoneError}
+                  >
                     <label>Picture</label>
-                    <Button disabled icon labelPosition="left">
-                      <Icon name="camera retro" />
-                      Open camera
-                    </Button>
-                    <Button icon labelPosition="right">
-                      Choose from computer
-                      <Icon name="file image" />
-                    </Button>
+                    <DropzoneComponent
+                      className="dropzone"
+                      config={this.dropzoneConfig}
+                      eventHandlers={this.eventHandlers}
+                      djsConfig={this.djsConfig}
+                    />
+
+                    <Form.Group widths="equal">
+                      <Form.Button disabled icon labelPosition="right">
+                        <Icon name="camera retro" />
+                        Open camera
+                      </Form.Button>
+                      <Form.Button
+                        onClick={() => this.dropzone.hiddenFileInput.click()}
+                        icon
+                        labelPosition="right"
+                      >
+                        Choose from computer
+                        <Icon name="file image" />
+                      </Form.Button>
+                    </Form.Group>
                   </Form.Field>
 
                   <Form.Field
@@ -341,7 +509,6 @@ class App extends React.Component {
               <p style={{ color: "white" }}>{JSON.stringify(item)}</p>
             ))}
           </Sidebar>
-
           <Sidebar.Pusher>
             <Grid.Row>
               <Grid.Column>
@@ -364,6 +531,19 @@ class App extends React.Component {
             </Grid.Row>
           </Sidebar.Pusher>
         </Sidebar.Pushable>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnVisibilityChange
+          draggable
+          pauseOnHover
+        />
+        {/* Same as */}
+        <ToastContainer />
       </Responsive>
     );
   }

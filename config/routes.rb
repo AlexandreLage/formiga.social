@@ -6,5 +6,8 @@ Rails.application.routes.draw do
 
   scope '/api' do
     resources :posts
+    post '/attach_picture', to: 'posts#attach_picture', controller: 'posts'
   end
+
+
 end

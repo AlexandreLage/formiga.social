@@ -1,7 +1,7 @@
 class Post < ApplicationRecord
-  has_one_attached :picture
+  has_many_attached :pictures
 
-  def picture_attached?
-    self.picture.attached?
-  end
+  # def picture_attached?
+  #   self.picture.attached?
+  # end
 end
