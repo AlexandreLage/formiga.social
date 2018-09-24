@@ -21,7 +21,9 @@ import {
   TextArea,
   Message,
   Card,
-  Transition
+  Transition,
+  Sticky,
+  Rail
 } from "semantic-ui-react";
 
 import {
@@ -36,7 +38,7 @@ import moment from "moment";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ActionCable } from "react-actioncable-provider";
-import { Gallery } from './components';
+import { Gallery } from "./components";
 
 const JSON_HEADERS = {
   "Content-Type": "application/json"
@@ -62,32 +64,40 @@ const ErrorMessage = props => {
   }
 };
 
-const FSCard = props => (
-  <Card link fluid>
-    <Gallery showThumbnails
-      images={props.pictures.map(item => ({
-        caption: props.title,
-        src: item,
-        thumbnail: item,
-        orientation: 'squared',
-        useForDemo: true
-      }))}
-    />
-    <Card.Content>
-      <Card.Header>{props.title}</Card.Header>
-      <Card.Meta>
-        <span className="date">{props.address1 || props.address2}</span>
-      </Card.Meta>
-      <Card.Description>{props.description}</Card.Description>
-    </Card.Content>
-    <Card.Content extra>
-      <a>
-        <Icon name="eye" />
-        {Math.floor(Math.random() * 100)} People watching
-      </a>
-    </Card.Content>
-  </Card>
-);
+const FSCard = props => {
+  return (
+    <Card
+      link
+      fluid
+      color="pink"
+      style={{ background: "linear-gradient(to bottom,#F7F7FF, white)" }}
+    >
+      <Gallery
+        showThumbnails
+        images={props.pictures.map(item => ({
+          caption: props.title,
+          src: item,
+          thumbnail: item,
+          orientation: "squared",
+          useForDemo: true
+        }))}
+      />
+      <Card.Content>
+        <Card.Header style={{color: '#430089'}}>{props.title}</Card.Header>
+        <Card.Meta>
+          <span className="date">{props.address1 || props.address2}</span>
+        </Card.Meta>
+        <Card.Description>{props.description}</Card.Description>
+      </Card.Content>
+      <Card.Content extra>
+        <a>
+          <Icon name="eye" />
+          {Math.floor(Math.random() * 100)} People watching
+        </a>
+      </Card.Content>
+    </Card>
+  );
+};
 
 class App extends React.Component {
   constructor(props) {
@@ -365,7 +375,7 @@ class App extends React.Component {
 
     toast("Awesome! List's been updated 🚀", {
       position: "top-left",
-      autoClose: 5000,
+      autoClose: 2500,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -378,30 +388,38 @@ class App extends React.Component {
     const { sidebarOpened } = this.state;
 
     return (
-      <Responsive>
+      <Responsive style={{ height: "100vh" }}>
         <ActionCable
           channel={{ channel: "PostsChannel" }}
           onReceived={this.handleReceivedPost}
         />
-        <Menu fixed="top" pointing>
-          <Menu.Item>
-            <Icon name="recycle" /> Formiga Social
+        <Menu inverted fixed="top" pointing style={{ background: "#430089" }}>
+          <Menu.Item as={"a"} href="http://formiga.social">
+            <Header style={{padding: 10}} inverted as='h1'><Icon name="recycle" size={40}/> Formiga Social</Header>
           </Menu.Item>
           <Menu.Item position="right">
             <Popup
+              style={{
+                borderRadius: 0,
+                opacity: 0.95,
+                padding: "2em"
+              }}
               open={this.state.uploadFormOpen}
               flowing
               on="click"
               trigger={
-                <Button
-                  onClick={() =>
-                    this.setState({
-                      uploadFormOpen: !this.state.uploadFormOpen
-                    })
-                  }
-                >
-                  <Icon name="cloud upload" />Upload
-                </Button>
+                <div ref={ref => (this.uploadButton = ref)}>
+                  <Button
+                    inverted
+                    onClick={() =>
+                      this.setState({
+                        uploadFormOpen: !this.state.uploadFormOpen
+                      })
+                    }
+                  >
+                    <Icon name="cloud upload" />Upload
+                  </Button>
+                </div>
               }
             >
               <Popup.Header>Upload new picture</Popup.Header>
@@ -431,7 +449,13 @@ class App extends React.Component {
                   </Form.Field>
 
                   <Form.Group widths="equal">
-                    <Button type="button" disabled icon labelPosition="right">
+                    <Button
+                      fluid
+                      type="button"
+                      disabled
+                      icon
+                      labelPosition="right"
+                    >
                       <Icon name="camera retro" />
                       Open camera
                     </Button>
@@ -524,6 +548,7 @@ class App extends React.Component {
                   </Form.Group>
 
                   <Form.Checkbox
+                    style={{color: 'white'}}
                     name="terms"
                     toggle
                     checked={this.state.form.terms}
@@ -561,22 +586,33 @@ class App extends React.Component {
             </Popup>
           </Menu.Item>
         </Menu>
-        <Sidebar.Pushable>
+        <Sidebar.Pushable style={{ height: "100vh" }}>
           <Sidebar
             as={Menu}
             width="very wide"
             animation="push"
             vertical
             visible={sidebarOpened}
+            style={{
+              marginTop: 50,
+              overflow: "hidden",
+              background: "linear-gradient(to bottom, #430089, #000)"
+            }}
           >
-            <Card.Group style={{ padding: 10 }}>
+            <Card.Group style={{ padding: 10, marginTop: 90 }}>
+              <div style={{marginLeft: 10}}>
+                <Header inverted as='h2'>Pictures feed</Header>
+                <p style={{color: '#F7F7FF'}}>Let's work together for a better country?
+                  Here we share public service issue's for a better society.</p>
+              </div>
+
               {this.state.posts.map(item => <FSCard {...item} />)}
             </Card.Group>
           </Sidebar>
-          <Sidebar.Pusher>
+          <Sidebar.Pusher style={{ backgroundColor: "green", height: "100vh" }}>
             <Grid.Row>
               <Grid.Column>
-                <div style={{ backgroundColor: "yellow", height: "100vh" }}>
+                <div>
                   <Button
                     style={{ margin: 10 }}
                     icon={!sidebarOpened}
@@ -588,7 +624,7 @@ class App extends React.Component {
                       size="large"
                       name={sidebarOpened ? "angle left" : "sidebar"}
                     />
-                    {sidebarOpened ? null : "Expandir "}
+                    {sidebarOpened ? null : "Expand "}
                   </Button>
                 </div>
               </Grid.Column>
