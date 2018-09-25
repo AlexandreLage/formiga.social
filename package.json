@@ -1,5 +1,5 @@
 {
-  "name": "formiga-social",
+  "name": "formiga.social",
   "license": "MIT",
   "engines": {
     "node": "8.9.4",
