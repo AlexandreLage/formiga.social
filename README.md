@@ -3,6 +3,8 @@ It is an interface for sharing pictures of public service issues. People can rep
 
 It uses Rails api-only backend (including active storage and active cable features) with React front-end.
 
+![alt text](https://raw.githubusercontent.com/AlexandreLage/formiga.social/master/screenshot.png)
+
 ### Back-end
 
 - Back-office uses  *Ruby on Rails* MVC framework;
