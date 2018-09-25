@@ -1,6 +1,7 @@
-#About formiga.social
-Rails api-only backend (including active storage and active cable features) with React front-end.
+#About [formiga.social](http://formiga.social/ "formiga.social")
+It is an interface for sharing pictures of public service issues. People can report and follow issues so they can be solved in a more efficient way.
 
+It uses Rails api-only backend (including active storage and active cable features) with React front-end.
 
 ###Back-end
 
