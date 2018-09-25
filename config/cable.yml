@@ -6,5 +6,7 @@ test:
 
 production:
   adapter: redis
-  url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
-  channel_prefix: rails-react-image-uploader_production
+  #url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
+  url: redis://redistogo:57a7ec2a16e2aaa04f70cb7f8667eabf@spinyfin.redistogo.com:10497/
+  #@Xande
+  #channel_prefix: rails-react-image-uploader_production
