@@ -393,7 +393,7 @@ class App extends React.Component {
           } else return res.text();
         })
         .then(post => {
-          //console.log("Permanent Post", post);
+          console.log("Permanent Post text response:", post);
         });
     }
   };
@@ -430,7 +430,7 @@ class App extends React.Component {
               <Icon name="recycle" size={40} /> formiga.social
             </Header>
           </Menu.Item>
-          <Menu.Item position="right">
+          <Menu.Item position="left">
             <Popup
               style={{
                 borderRadius: 0,
