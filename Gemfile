@@ -54,3 +54,5 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 #Active storage for pictures
 gem "google-cloud-storage", "~> 1.11", require: false
+
+gem "bugsnag", "~> 6.8"
