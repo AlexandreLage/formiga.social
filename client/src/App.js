@@ -286,7 +286,7 @@ class App extends React.Component {
         });
       });
 
-    this.setState({ uploadFormOpen: true });
+    //this.setState({ uploadFormOpen: true });
   };
 
   handlePusherClick = () => {
@@ -384,7 +384,7 @@ class App extends React.Component {
               pauseOnHover: true,
               draggable: true
             });
-            this.setState({ submitted: true }, () => {
+            this.setState({ submitted: true, uploadFormOpen: false }, () => {
               this.dropzone.removeAllFiles();
               this.handleTemporaryPost();
             });
