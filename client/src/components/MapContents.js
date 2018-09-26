@@ -75,6 +75,9 @@ class Contents extends Component {
               width: "100%"
             }}
           >
+            <Marker position={{ lat: -23.566842, lng: -46.6362884 }} />
+            <Marker position={position} />
+            <Marker position={position} />
             <Marker position={position} />
           </Map>
         </div>

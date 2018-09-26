@@ -10,6 +10,7 @@
     "react-actioncable-provider": "^1.0.3",
     "react-dom": "^16.5.2",
     "react-dropzone-component": "^3.2.0",
+    "react-geolocated": "^2.4.0",
     "react-images": "^0.5.19",
     "react-scripts": "1.1.5",
     "react-toastify": "^4.3.1",

@@ -40,6 +40,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ActionCable } from "react-actioncable-provider";
 import { Gallery } from "./components";
 import { Map, InfoWindow, Marker, GoogleApiWrapper } from "google-maps-react";
+import { geolocated } from "react-geolocated";
 
 const JSON_HEADERS = {
   "Content-Type": "application/json"
@@ -49,26 +50,65 @@ const JSON_HEADERS = {
 //   Accept: "application/json",
 //   "Content-Type": "multipart/form-data"
 // };
-//
-//
+
+
 class MapContainer extends Component {
+
+  constructor(props){
+    super(props)
+
+    this.state = {
+      markers: []
+    }
+
+      let markers = []
+      for(var i=0; i < 100; i++){
+        let random = Math.floor(Math.random() * 10);
+
+        markers.push({ lat: -23.549842+((-i)^(i%2)*i*Math.floor(Math.random() * 10))/3003, lng: -46.6362884+((-i)^((i+1)%2)*i*Math.floor(Math.random() * 10))/3003 });
+
+        markers.push({ lat: -23.694106+(i*Math.floor(Math.random() * 20))/3003, lng: -46.702469+(i*Math.floor(Math.random() * 20))/3003 });
+
+        markers.push({ lat: -23.694106+(i*Math.floor(Math.random() * 17))/3003, lng: -46.702469+(i*Math.floor(Math.random() * 15))/3003 });
+
+      }
+
+      this.pushMarker(markers);
+  }
+
+  pushMarker = (markers) => {
+    this.setState({markers: [...this.state.markers, ...markers]})
+  }
+
+  componentDidMount(){
+    let markers = []
+    if(this.props.latitude && this.props.longitude){
+      for(var i=0; i < 50; i++){
+        let random = Math.floor(Math.random() * 10);
+
+        markers.push({ lat: this.props.latitude+((-i)^(i%2)*i*Math.floor(Math.random() * 10))/3003, lng: this.props.longitude+((-i)^((i+1)%2)*i*Math.floor(Math.random() * 10))/3003 });
+
+        markers.push({ lat: this.props.latitude+(i*Math.floor(Math.random() * 20))/3003, lng: this.props.longitude+(i*Math.floor(Math.random() * 20))/3003 });
+
+        markers.push({ lat: this.props.latitude+(i*Math.floor(Math.random() * 17))/3003, lng: this.props.longitude+(i*Math.floor(Math.random() * 15))/3003 });
+
+      }
+      this.pushMarker(markers);
+
+    }
+  }
+
   render() {
     return (
       <Map
         initialCenter={{
-          lat: -23.5675222,
-          lng: -46.6378649
+          lat: this.props.latitude || -23.681111,
+          lng: this.props.longitude || -46.623196
         }}
         google={this.props.google}
         zoom={14}
       >
-        <Marker onClick={() => {}} name={"Current location"} />
-
-        <InfoWindow onClose={() => {}}>
-          <div>
-            <h1>"Infor window?"</h1>
-          </div>
-        </InfoWindow>
+      {this.state.markers.map(position => {return <Marker position={position} />})}
       </Map>
     );
   }
@@ -415,6 +455,8 @@ class App extends React.Component {
   };
 
   render() {
+    console.log('this.props.coords', this.props.coords)
+
     const { children } = this.props;
     const { sidebarOpened } = this.state;
 
@@ -645,11 +687,13 @@ class App extends React.Component {
               {this.state.posts.map(item => <FSCard {...item} />)}
             </Card.Group>
           </Sidebar>
-          <Sidebar.Pusher style={{ backgroundColor: "#304240", height: "100vh" }}>
+          <Sidebar.Pusher
+            style={{ backgroundColor: "#304240", height: "100vh" }}
+          >
             <Grid.Row>
               <Grid.Column>
                 <div>
-                  <Maps />
+                  <Maps latitude={this.props.coords && this.props.coords.latitude} longitude={this.props.coords && this.props.coords.longitude}/>
                   <Button
                     style={{ margin: 10 }}
                     icon={!sidebarOpened}
@@ -686,4 +730,11 @@ class App extends React.Component {
   }
 }
 
-export default App;
+export default geolocated({
+  positionOptions: {
+    enableHighAccuracy: false
+  },
+  userDecisionTimeout: 5000
+})(App);
+
+//export default App;
