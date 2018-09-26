@@ -41,6 +41,8 @@ import { ActionCable } from "react-actioncable-provider";
 import { Gallery } from "./components";
 import { Map, InfoWindow, Marker, GoogleApiWrapper } from "google-maps-react";
 import { geolocated } from "react-geolocated";
+import styles from "./loading.css";
+import Loader from "react-loader-spinner";
 
 const JSON_HEADERS = {
   "Content-Type": "application/json"
@@ -51,50 +53,75 @@ const JSON_HEADERS = {
 //   "Content-Type": "multipart/form-data"
 // };
 
-
 class MapContainer extends Component {
-
-  constructor(props){
-    super(props)
+  constructor(props) {
+    super(props);
 
     this.state = {
       markers: []
+    };
+
+    let markers = [];
+    for (var i = 0; i < 100; i++) {
+      let random = Math.floor(Math.random() * 10);
+
+      markers.push({
+        lat:
+          -23.549842 +
+          (-i ^ ((i % 2) * i * Math.floor(Math.random() * 10))) / 3003,
+        lng:
+          -46.6362884 +
+          (-i ^ (((i + 1) % 2) * i * Math.floor(Math.random() * 10))) / 3003
+      });
+
+      markers.push({
+        lat: -23.694106 + (i * Math.floor(Math.random() * 20)) / 3003,
+        lng: -46.702469 + (i * Math.floor(Math.random() * 20)) / 3003
+      });
+
+      markers.push({
+        lat: -23.694106 + (i * Math.floor(Math.random() * 17)) / 3003,
+        lng: -46.702469 + (i * Math.floor(Math.random() * 15)) / 3003
+      });
     }
 
-      let markers = []
-      for(var i=0; i < 100; i++){
-        let random = Math.floor(Math.random() * 10);
-
-        markers.push({ lat: -23.549842+((-i)^(i%2)*i*Math.floor(Math.random() * 10))/3003, lng: -46.6362884+((-i)^((i+1)%2)*i*Math.floor(Math.random() * 10))/3003 });
-
-        markers.push({ lat: -23.694106+(i*Math.floor(Math.random() * 20))/3003, lng: -46.702469+(i*Math.floor(Math.random() * 20))/3003 });
-
-        markers.push({ lat: -23.694106+(i*Math.floor(Math.random() * 17))/3003, lng: -46.702469+(i*Math.floor(Math.random() * 15))/3003 });
-
-      }
-
-      this.pushMarker(markers);
+    this.pushMarker(markers);
   }
 
-  pushMarker = (markers) => {
-    this.setState({markers: [...this.state.markers, ...markers]})
-  }
+  pushMarker = markers => {
+    this.setState({ markers: [...this.state.markers, ...markers] });
+  };
 
-  componentDidMount(){
-    let markers = []
-    if(this.props.latitude && this.props.longitude){
-      for(var i=0; i < 50; i++){
+  componentDidMount() {
+    let markers = [];
+    if (this.props.latitude && this.props.longitude) {
+      for (var i = 0; i < 50; i++) {
         let random = Math.floor(Math.random() * 10);
 
-        markers.push({ lat: this.props.latitude+((-i)^(i%2)*i*Math.floor(Math.random() * 10))/3003, lng: this.props.longitude+((-i)^((i+1)%2)*i*Math.floor(Math.random() * 10))/3003 });
+        markers.push({
+          lat:
+            this.props.latitude +
+            (-i ^ ((i % 2) * i * Math.floor(Math.random() * 10))) / 3003,
+          lng:
+            this.props.longitude +
+            (-i ^ (((i + 1) % 2) * i * Math.floor(Math.random() * 10))) / 3003
+        });
 
-        markers.push({ lat: this.props.latitude+(i*Math.floor(Math.random() * 20))/3003, lng: this.props.longitude+(i*Math.floor(Math.random() * 20))/3003 });
+        markers.push({
+          lat:
+            this.props.latitude + (i * Math.floor(Math.random() * 20)) / 3003,
+          lng:
+            this.props.longitude + (i * Math.floor(Math.random() * 20)) / 3003
+        });
 
-        markers.push({ lat: this.props.latitude+(i*Math.floor(Math.random() * 17))/3003, lng: this.props.longitude+(i*Math.floor(Math.random() * 15))/3003 });
-
+        markers.push({
+          lat:
+            this.props.latitude + (i * Math.floor(Math.random() * 17)) / 3003,
+          lng:
+            this.props.longitude + (i * Math.floor(Math.random() * 15)) / 3003
+        });
       }
       this.pushMarker(markers);
-
     }
   }
 
@@ -108,7 +135,9 @@ class MapContainer extends Component {
         google={this.props.google}
         zoom={14}
       >
-      {this.state.markers.map(position => {return <Marker position={position} />})}
+        {this.state.markers.map(position => {
+          return <Marker position={position} />;
+        })}
       </Map>
     );
   }
@@ -203,11 +232,14 @@ class App extends React.Component {
       },
       form_settings: {},
       errorMessage: [""],
-      isFormOnError: false
+      isFormOnError: false,
+      loading: true
     };
   }
 
   componentDidMount() {
+    setTimeout(() => this.setState({ loading: false }), 2500); // simulates an async action, and hides the spinner
+
     //DropzoneComponent setting
     this.dropzoneConfig = {
       iconFiletypes: [".jpg", ".png", ".gif"],
@@ -455,278 +487,293 @@ class App extends React.Component {
   };
 
   render() {
-    console.log('this.props.coords', this.props.coords)
+    console.log("this.props.coords", this.props.coords);
 
     const { children } = this.props;
     const { sidebarOpened } = this.state;
 
-    return (
-      <Responsive style={{ height: "100vh" }}>
-        <ActionCable
-          channel={{ channel: "PostsChannel" }}
-          onReceived={this.handleReceivedPost}
-        />
-        <Menu inverted fixed="top" pointing style={{ background: "#304240" }}>
-          <Menu.Item as={"a"} href="http://formiga.social">
-            <Header style={{ padding: 10 }} inverted as="h1">
-              <Icon name="recycle" size={40} /> formiga.social
-            </Header>
-          </Menu.Item>
-          <Menu.Item position="left">
-            <Popup
+    if (!this.state.loading) {
+      return (
+        <Responsive style={{ height: "100vh" }}>
+          <ActionCable
+            channel={{ channel: "PostsChannel" }}
+            onReceived={this.handleReceivedPost}
+          />
+          <Menu inverted fixed="top" pointing style={{ background: "#304240" }}>
+            <Menu.Item as={"a"} href="http://formiga.social">
+              <Header style={{ padding: 10 }} inverted as="h1">
+                <Icon name="recycle" size={40} /> formiga.social
+              </Header>
+            </Menu.Item>
+            <Menu.Item position="left">
+              <Popup
+                style={{
+                  borderRadius: 0,
+                  opacity: 0.95,
+                  padding: "2em"
+                }}
+                open={this.state.uploadFormOpen}
+                flowing
+                on="click"
+                trigger={
+                  <div ref={ref => (this.uploadButton = ref)}>
+                    <Button
+                      inverted
+                      onClick={() =>
+                        this.setState({
+                          uploadFormOpen: !this.state.uploadFormOpen
+                        })
+                      }
+                    >
+                      <Icon name="cloud upload" />Upload
+                    </Button>
+                  </div>
+                }
+              >
+                <Popup.Header>Upload new picture</Popup.Header>
+                <Popup.Content>
+                  <Form onSubmit={event => this.handleSubmit(event)}>
+                    <Form.Input
+                      label="Title"
+                      name="title"
+                      placeholder="Write one title for picture"
+                      value={this.state.form.title}
+                      onChange={this.handleInputChange}
+                      error={this.state.form_errors.titleError}
+                      required
+                    />
+
+                    <Form.Field
+                      required
+                      error={this.state.form_errors.dropzoneError}
+                    >
+                      <label>Picture</label>
+                      <DropzoneComponent
+                        className="dropzone"
+                        config={this.dropzoneConfig}
+                        eventHandlers={this.eventHandlers}
+                        djsConfig={this.djsConfig}
+                      />
+                    </Form.Field>
+
+                    <Form.Group widths="equal">
+                      <Button
+                        fluid
+                        type="button"
+                        disabled
+                        icon
+                        labelPosition="right"
+                      >
+                        <Icon name="camera retro" />
+                        Open camera
+                      </Button>
+                      <Button
+                        fluid
+                        onClick={() => this.dropzone.hiddenFileInput.click()}
+                        icon
+                        labelPosition="right"
+                        type="button"
+                      >
+                        Choose from computer
+                        <Icon name="file image" />
+                      </Button>
+                    </Form.Group>
+
+                    <Form.Field
+                      id="form-textarea-control-description"
+                      name="description"
+                      control={TextArea}
+                      label="Description"
+                      placeholder="Explain the issue on the picture"
+                      value={this.state.form.description}
+                      onChange={this.handleInputChange}
+                      error={this.state.form_errors.descriptionError}
+                      required
+                    />
+                    <Form.Field required>
+                      <label>Date</label>
+                      <DateTimeInput
+                        readOnly
+                        name="datetime"
+                        placeholder="Date of the picture"
+                        value={this.state.form.datetime}
+                        iconPosition="left"
+                        onChange={this.handleDateChange}
+                      />
+                    </Form.Field>
+
+                    <Form.Group>
+                      <Form.Input
+                        label="Street/Avenue"
+                        placeholder="Paulista Avenue"
+                        width={10}
+                        name="address"
+                        value={this.state.form.address}
+                        onChange={this.handleInputChange}
+                        error={this.state.form_errors.addressError}
+                        required
+                      />
+                      <Form.Input
+                        label="Number"
+                        placeholder="1234"
+                        name="number"
+                        width={6}
+                        value={this.state.form.number}
+                        onChange={this.handleInputChange}
+                        error={this.state.form_errors.numberError}
+                      />
+                    </Form.Group>
+
+                    <Form.Input
+                      label="Neighborhood"
+                      placeholder="Jd. Paulista"
+                      name="neighborhood"
+                      value={this.state.form.neighborhood}
+                      onChange={this.handleInputChange}
+                      error={this.state.form_errors.neighborhoodError}
+                      required
+                    />
+
+                    <Form.Group widths="equal">
+                      <Form.Input
+                        label="City"
+                        placeholder="São Paulo"
+                        name="city"
+                        value={this.state.form.city}
+                        onChange={this.handleInputChange}
+                        error={this.state.form_errors.cityError}
+                        required
+                      />
+                      <Form.Input
+                        label="State"
+                        placeholder="São Paulo"
+                        name="state"
+                        value={this.state.form.state}
+                        onChange={this.handleInputChange}
+                        error={this.state.form_errors.stateError}
+                        required
+                      />
+                    </Form.Group>
+
+                    <Form.Checkbox
+                      style={{ color: "white" }}
+                      name="terms"
+                      toggle
+                      checked={this.state.form.terms}
+                      onChange={() =>
+                        this.setState({
+                          form: {
+                            ...this.state.form,
+                            terms: !this.state.form.terms
+                          }
+                        })
+                      }
+                      label="I agree to the Terms and Conditions"
+                    />
+                    <Form.Button
+                      disabled={
+                        !this.state.form.title ||
+                        !this.state.form.description ||
+                        !this.state.form.datetime ||
+                        !this.state.form.address ||
+                        !this.state.form.neighborhood ||
+                        !this.state.form.city ||
+                        !this.state.form.state ||
+                        !this.state.form.terms ||
+                        !this.state.queueComplete
+                      }
+                      type="submit"
+                    >
+                      Submit
+                    </Form.Button>
+                  </Form>
+                  {this.state.isFormOnError && (
+                    <ErrorMessage errorMessage={this.state.errorMessage} />
+                  )}
+                </Popup.Content>
+              </Popup>
+            </Menu.Item>
+          </Menu>
+          <Sidebar.Pushable style={{ height: "100vh" }}>
+            <Sidebar
+              as={Menu}
+              width="very wide"
+              animation="push"
+              vertical
+              visible={sidebarOpened}
               style={{
-                borderRadius: 0,
-                opacity: 0.95,
-                padding: "2em"
+                marginTop: 50,
+                overflow: "hidden",
+                background: "linear-gradient(to bottom, #304240, #000)"
               }}
-              open={this.state.uploadFormOpen}
-              flowing
-              on="click"
-              trigger={
-                <div ref={ref => (this.uploadButton = ref)}>
-                  <Button
-                    inverted
-                    onClick={() =>
-                      this.setState({
-                        uploadFormOpen: !this.state.uploadFormOpen
-                      })
-                    }
-                  >
-                    <Icon name="cloud upload" />Upload
-                  </Button>
-                </div>
-              }
             >
-              <Popup.Header>Upload new picture</Popup.Header>
-              <Popup.Content>
-                <Form onSubmit={event => this.handleSubmit(event)}>
-                  <Form.Input
-                    label="Title"
-                    name="title"
-                    placeholder="Write one title for picture"
-                    value={this.state.form.title}
-                    onChange={this.handleInputChange}
-                    error={this.state.form_errors.titleError}
-                    required
-                  />
-
-                  <Form.Field
-                    required
-                    error={this.state.form_errors.dropzoneError}
-                  >
-                    <label>Picture</label>
-                    <DropzoneComponent
-                      className="dropzone"
-                      config={this.dropzoneConfig}
-                      eventHandlers={this.eventHandlers}
-                      djsConfig={this.djsConfig}
-                    />
-                  </Form.Field>
-
-                  <Form.Group widths="equal">
-                    <Button
-                      fluid
-                      type="button"
-                      disabled
-                      icon
-                      labelPosition="right"
-                    >
-                      <Icon name="camera retro" />
-                      Open camera
-                    </Button>
-                    <Button
-                      fluid
-                      onClick={() => this.dropzone.hiddenFileInput.click()}
-                      icon
-                      labelPosition="right"
-                      type="button"
-                    >
-                      Choose from computer
-                      <Icon name="file image" />
-                    </Button>
-                  </Form.Group>
-
-                  <Form.Field
-                    id="form-textarea-control-description"
-                    name="description"
-                    control={TextArea}
-                    label="Description"
-                    placeholder="Explain the issue on the picture"
-                    value={this.state.form.description}
-                    onChange={this.handleInputChange}
-                    error={this.state.form_errors.descriptionError}
-                    required
-                  />
-                  <Form.Field required>
-                    <label>Date</label>
-                    <DateTimeInput
-                      readOnly
-                      name="datetime"
-                      placeholder="Date of the picture"
-                      value={this.state.form.datetime}
-                      iconPosition="left"
-                      onChange={this.handleDateChange}
-                    />
-                  </Form.Field>
-
-                  <Form.Group>
-                    <Form.Input
-                      label="Street/Avenue"
-                      placeholder="Paulista Avenue"
-                      width={10}
-                      name="address"
-                      value={this.state.form.address}
-                      onChange={this.handleInputChange}
-                      error={this.state.form_errors.addressError}
-                      required
-                    />
-                    <Form.Input
-                      label="Number"
-                      placeholder="1234"
-                      name="number"
-                      width={6}
-                      value={this.state.form.number}
-                      onChange={this.handleInputChange}
-                      error={this.state.form_errors.numberError}
-                    />
-                  </Form.Group>
-
-                  <Form.Input
-                    label="Neighborhood"
-                    placeholder="Jd. Paulista"
-                    name="neighborhood"
-                    value={this.state.form.neighborhood}
-                    onChange={this.handleInputChange}
-                    error={this.state.form_errors.neighborhoodError}
-                    required
-                  />
-
-                  <Form.Group widths="equal">
-                    <Form.Input
-                      label="City"
-                      placeholder="São Paulo"
-                      name="city"
-                      value={this.state.form.city}
-                      onChange={this.handleInputChange}
-                      error={this.state.form_errors.cityError}
-                      required
-                    />
-                    <Form.Input
-                      label="State"
-                      placeholder="São Paulo"
-                      name="state"
-                      value={this.state.form.state}
-                      onChange={this.handleInputChange}
-                      error={this.state.form_errors.stateError}
-                      required
-                    />
-                  </Form.Group>
-
-                  <Form.Checkbox
-                    style={{ color: "white" }}
-                    name="terms"
-                    toggle
-                    checked={this.state.form.terms}
-                    onChange={() =>
-                      this.setState({
-                        form: {
-                          ...this.state.form,
-                          terms: !this.state.form.terms
-                        }
-                      })
-                    }
-                    label="I agree to the Terms and Conditions"
-                  />
-                  <Form.Button
-                    disabled={
-                      !this.state.form.title ||
-                      !this.state.form.description ||
-                      !this.state.form.datetime ||
-                      !this.state.form.address ||
-                      !this.state.form.neighborhood ||
-                      !this.state.form.city ||
-                      !this.state.form.state ||
-                      !this.state.form.terms ||
-                      !this.state.queueComplete
-                    }
-                    type="submit"
-                  >
-                    Submit
-                  </Form.Button>
-                </Form>
-                {this.state.isFormOnError && (
-                  <ErrorMessage errorMessage={this.state.errorMessage} />
-                )}
-              </Popup.Content>
-            </Popup>
-          </Menu.Item>
-        </Menu>
-        <Sidebar.Pushable style={{ height: "100vh" }}>
-          <Sidebar
-            as={Menu}
-            width="very wide"
-            animation="push"
-            vertical
-            visible={sidebarOpened}
-            style={{
-              marginTop: 50,
-              overflow: "hidden",
-              background: "linear-gradient(to bottom, #304240, #000)"
-            }}
-          >
-            <Card.Group style={{ padding: 10, marginTop: 90 }}>
-              <div style={{ marginLeft: 10 }}>
-                <Header inverted as="h2">
-                  Pictures feed
-                </Header>
-                <p style={{ color: "#F7F7FF" }}>
-                  Let's share public service issues in our society.
-                </p>
-              </div>
-
-              {this.state.posts.map(item => <FSCard {...item} />)}
-            </Card.Group>
-          </Sidebar>
-          <Sidebar.Pusher
-            style={{ backgroundColor: "#304240", height: "100vh" }}
-          >
-            <Grid.Row>
-              <Grid.Column>
-                <div>
-                  <Maps latitude={this.props.coords && this.props.coords.latitude} longitude={this.props.coords && this.props.coords.longitude}/>
-                  <Button
-                    style={{ margin: 10 }}
-                    icon={!sidebarOpened}
-                    labelPosition="left"
-                    onClick={this.handleToggle}
-                  >
-                    <Icon
-                      style={sidebarOpened ? { padding: 10 } : null}
-                      size="large"
-                      name={sidebarOpened ? "angle left" : "sidebar"}
-                    />
-                    {sidebarOpened ? null : "Expand "}
-                  </Button>
+              <Card.Group style={{ padding: 10, marginTop: 90 }}>
+                <div style={{ marginLeft: 10 }}>
+                  <Header inverted as="h2">
+                    Pictures feed
+                  </Header>
+                  <p style={{ color: "#F7F7FF" }}>
+                    Let's share public service issues in our society.
+                  </p>
                 </div>
-              </Grid.Column>
-            </Grid.Row>
-          </Sidebar.Pusher>
-        </Sidebar.Pushable>
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnVisibilityChange
-          draggable
-          pauseOnHover
-        />
-        {/* Same as */}
-        <ToastContainer />
-      </Responsive>
-    );
+
+                {this.state.posts.map(item => <FSCard {...item} />)}
+              </Card.Group>
+            </Sidebar>
+            <Sidebar.Pusher
+              style={{ backgroundColor: "#304240", height: "100vh" }}
+            >
+              <Grid.Row>
+                <Grid.Column>
+                  <div>
+                    <Maps
+                      latitude={this.props.coords && this.props.coords.latitude}
+                      longitude={
+                        this.props.coords && this.props.coords.longitude
+                      }
+                    />
+                    <Button
+                      style={{ margin: 10 }}
+                      icon={!sidebarOpened}
+                      labelPosition="left"
+                      onClick={this.handleToggle}
+                    >
+                      <Icon
+                        style={sidebarOpened ? { padding: 10 } : null}
+                        size="large"
+                        name={sidebarOpened ? "angle left" : "sidebar"}
+                      />
+                      {sidebarOpened ? null : "Expand "}
+                    </Button>
+                  </div>
+                </Grid.Column>
+              </Grid.Row>
+            </Sidebar.Pusher>
+          </Sidebar.Pushable>
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnVisibilityChange
+            draggable
+            pauseOnHover
+          />
+          {/* Same as */}
+          <ToastContainer />
+        </Responsive>
+      );
+    } else {
+      return (
+        <div
+          className={"loading"}
+        >
+            <Loader type="Triangle" color="#000" height={80} width={80} />
+        </div>
+      );
+    }
   }
 }
 
